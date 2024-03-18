@@ -1,2 +1,0 @@
-# zillow-scraper
-Zillow Scrapper
