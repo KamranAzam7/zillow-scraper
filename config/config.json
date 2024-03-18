@@ -1,0 +1,12 @@
+{
+  "name": "Zillow Scraper",
+  "endpoint": "https://www.zillow.com/",
+  "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
+  "headless": false,
+  "devtools": false,
+  "timeout": 120000,
+  "ignore_resource_types": ["image", "stylesheet", "media", "font", "manifest"],
+  "max_tries": 3,
+  "executablePath": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "browserWSEndpoint": "ws://127.0.0.1:9229/devtools/browser/ae27bb31-9066-459b-bab2-88e07af0a5b9"
+}
