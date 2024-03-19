@@ -9,6 +9,7 @@ export interface IConfig {
   max_tries: number;
   executablePath: string;
   browserWSEndpoint: string;
+  city: string;
 }
 
 export interface IIdentifier {

@@ -2,22 +2,14 @@ import puppeteer from "puppeteer";
 import { createObjectCsvWriter } from "csv-writer";
 import { config } from "../environment/config";
 import { selectors } from "./selectors";
-
-interface ListingData {
-  address: string;
-  listingBy: string;
-  price: string;
-  beds: string;
-  baths: string;
-  sqft: string;
-}
+import { CONSTANTS, ListingData } from "./constants";
 
 async function scrapZillow(browser: puppeteer.Browser): Promise<void> {
   const page = await browser.newPage();
   await page.goto(config.endpoint);
 
   await page.waitForSelector(selectors.searchBoxSelector);
-  await page.type(selectors.searchBoxSelector, "New York");
+  await page.type(selectors.searchBoxSelector, config.city);
 
   const btn = await page.waitForSelector(selectors.searchButtonSelector);
   await Promise.all([page.waitForNavigation(), btn?.click()]);
@@ -44,13 +36,6 @@ async function scrapZillow(browser: puppeteer.Browser): Promise<void> {
   await scrollToBottom();
 
   const listingsData: ListingData[] = await scrapeAllListings(page);
-
-  try {
-    await writeToCsv(listingsData);
-  } catch (error) {
-    console.error("Error writing data to CSV file:", error);
-  }
-
   await page.close();
 }
 
@@ -101,26 +86,35 @@ async function scrapeAllListings(page: puppeteer.Page): Promise<ListingData[]> {
   async function goToNextPage() {
     const nextPageButton = await page.$("a[title='Next page']");
     if (nextPageButton) {
-      await Promise.all([
-        page.waitForNavigation({ timeout: 180000 }),
-        nextPageButton.click(),
-      ]);
-      await page.waitForSelector(selectors.searchPageListSelector);
-      return true;
-    } else {
-      return false;
+      const isDisabled = await nextPageButton.evaluate(
+        (btn) => btn.getAttribute("aria-disabled") === "true"
+      );
+      if (!isDisabled) {
+        await Promise.all([
+          page.waitForNavigation({ timeout: 180000 }),
+          nextPageButton.click(),
+        ]);
+        await page.waitForSelector(selectors.searchPageListSelector);
+        return true;
+      }
     }
+    return false;
   }
 
   async function recursiveScrape() {
     const pageListings = await scrapePageListings();
     listingsData = listingsData.concat(pageListings);
 
-    console.log(listingsData);
-
     const hasNextPage = await goToNextPage();
     if (hasNextPage) {
       await recursiveScrape();
+    } else {
+      console.log(CONSTANTS.PAGES_SCRAPPED_WRITING_DATA);
+      try {
+        await writeToCsv(listingsData);
+      } catch (error) {
+        console.error(CONSTANTS.ERROR_WRITING_DATA, error);
+      }
     }
   }
 
@@ -132,7 +126,7 @@ async function scrapeAllListings(page: puppeteer.Page): Promise<ListingData[]> {
 async function writeToCsv(listingsData: ListingData[]) {
   try {
     const csvWriter = createObjectCsvWriter({
-      path: "../listings-data.csv",
+      path: CONSTANTS.CSV_FILE_PATH,
       header: [
         { id: "address", title: "Address" },
         { id: "listingBy", title: "Listing By" },
@@ -145,9 +139,9 @@ async function writeToCsv(listingsData: ListingData[]) {
     });
 
     await csvWriter.writeRecords(listingsData);
-    console.log("Data successfully written to CSV file.");
+    console.log(CONSTANTS.DATA_WRITTEN_SUCCESSFULLY);
   } catch (error) {
-    console.error("Error writing data to CSV file:", error);
+    console.error(CONSTANTS.ERROR_WRITING_DATA, error);
   }
 }
 

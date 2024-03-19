@@ -17,6 +17,8 @@ const bathsElementSelector =
   ".StyledPropertyCardHomeDetailsList-c11n-8-100-1__sc-1j0som5-0.kAPEO li:nth-child(2) b";
 const sqftElementSelector =
   ".StyledPropertyCardHomeDetailsList-c11n-8-100-1__sc-1j0som5-0.kAPEO li:nth-child(3) b";
+const nextPageButtonSelector = "a[title='Next page']";
+const isDisabledSelector = "aria-disabled";
 
 export const selectors = {
   searchBoxSelector,
@@ -31,4 +33,6 @@ export const selectors = {
   bedsElementSelector,
   bathsElementSelector,
   sqftElementSelector,
+  nextPageButtonSelector,
+  isDisabledSelector,
 };
